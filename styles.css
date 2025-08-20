@@ -6,10 +6,39 @@ html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,
 .subtitle{color:var(--muted);font-size:13px;margin-top:4px}
 .layout{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px}
 @media(max-width:900px){.layout{grid-template-columns:1fr}}
-.stage{position:relative;background:#000;border-radius:12px;overflow:hidden;min-height:50vh}
-#video{width:100%;height:auto;display:block;transform:scaleX(1);/* дзеркалення перемикається JS */}
-#three-root{position:absolute;inset:0;pointer-events:none}
-.debug{position:absolute;inset:0;pointer-events:none;display:none}
+.stage{
+  position:relative;
+  background:#000;
+  border-radius:12px;
+  overflow:hidden;
+  min-height:60vh;            /* трохи більше площі під відео */
+}
+
+#video{
+  position:relative;
+  z-index:1;                  /* відео під прозорим 3D-канвасом */
+  width:100%;
+  height:100%;
+  object-fit:cover;           /* заповнює контейнер без чорних полів */
+  display:block;
+  transform:scaleX(1);        /* дзеркалимо у JS */
+}
+
+#three-root{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;        /* не блокує кліки по кнопках */
+}
+
+.debug{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  display:none;
+  background:transparent;
+}
 .panel{display:flex;flex-direction:column;gap:12px}
 .group{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
