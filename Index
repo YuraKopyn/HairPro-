@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HairTry Live — 3D фільтр</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- MediaPipe Tasks Vision (Face Landmarker + трансформації) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/vision_bundle.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">HairTry Live</div>
+    <div class="subtitle">Приміряй 3D-зачіску в реальному часі</div>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <!-- Відео з камери -->
+      <video id="video" autoplay playsinline muted></video>
+
+      <!-- 3D-рендерер (прозорий) вставиться сюди скриптом -->
+      <div id="three-root"></div>
+
+      <!-- Опц. тонкий canvas для дебагу лендмарок -->
+      <canvas id="debug" class="debug"></canvas>
+
+      <!-- Фото-фолбек, якщо камери нема -->
+      <input type="file" id="photoInput" accept="image/*" class="hidden" />
+    </section>
+
+    <aside class="panel">
+      <div class="group">
+        <button id="btnStart" class="btn">▶ Увімкнути камеру</button>
+        <button id="btnPhoto" class="btn ghost">Завантажити фото</button>
+      </div>
+
+      <div class="group">
+        <label class="row">
+          Колір волосся
+          <input type="color" id="hairColor" value="#2b1b12" />
+        </label>
+        <label class="row">
+          Прозорість
+          <input type="range" id="hairOpacity" min="0.2" max="1" step="0.01" value="0.95" />
+        </label>
+        <label class="row">
+          Масштаб
+          <input type="range" id="hairScale" min="0.7" max="1.6" step="0.01" value="1" />
+        </label>
+        <label class="row">
+          Зсув по висоті
+          <input type="range" id="hairYOffset" min="-0.15" max="0.25" step="0.005" value="0" />
+        </label>
+        <label class="row">
+          Зсув уперед/назад
+          <input type="range" id="hairZOffset" min="-0.2" max="0.2" step="0.005" value="0" />
+        </label>
+      </div>
+
+      <div class="group">
+        <button id="btnFlip" class="btn ghost">↔ Дзеркалити відео</button>
+        <button id="btnDebug" class="btn ghost">Показати точки</button>
+      </div>
+
+      <div class="group">
+        <label class="row">
+          Стиль (GLB)
+          <select id="styleSelect">
+            <option value="builtin">Вбудований (шапка)</option>
+            <!-- приклади під GLB (додаси свої файли в /models і вкажеш URL) -->
+            <option value="models/male_short.glb">Short (GLB)</option>
+            <option value="models/male_curly.glb">Curly (GLB)</option>
+          </select>
+        </label>
+      </div>
+
+      <p class="hint">Під GLB-модель поки стоїть заглушка. Додамо реальні моделі — і отримаєш рівень TikTok.</p>
+    </aside>
+  </main>
+
+  <footer class="foot">Порада: краще освітлення і камера прямо — трекінг стабільніший.</footer>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
