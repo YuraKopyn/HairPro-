@@ -311,5 +311,22 @@ async function startLoop() {
 
   process();
 }
+function placeSticker(landmarks, matrix) {
+  // тут малюєш свій стікер
+  // приклад: додаєш картинку у Three.js сцену
+  const texture = new THREE.TextureLoader().load('sticker.png');
+  const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const sprite = new THREE.Sprite(material);
 
+  // ставимо розмір
+  sprite.scale.set(2, 2, 1);
+
+  // прив’язка до обличчя (наприклад, до носа)
+  if (landmarks && landmarks[1]) {
+    const nose = landmarks[1]; // координати носа
+    sprite.position.set(nose.x, nose.y, nose.z);
+  }
+
+  scene.add(sprite);
+}
 // Авто-старт не робимо — чекаємо кнопку, бо iOS вимагає взаємодію користувача
