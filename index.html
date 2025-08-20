@@ -1,103 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>HairTry Live — 3D фільтр</title>
-  <link rel="stylesheet" href="styles.css" />
-  <!-- MediaPipe Tasks Vision (Face Landmarker + трансформації) -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/vision_bundle.js"></script>
+  <meta charset="UTF-8" />
+  <title>Hair Try-On</title>
+  <style>
+    body { margin: 0; background: #111; color: #fff; font-family: sans-serif; text-align: center; }
+    #three-root { width: 100%; height: 70vh; background: #222; }
+    video, canvas { display: none; }
+    #status { background: rgba(255,0,0,0.7); padding: 8px; margin: 5px; display: none; }
+    #controls { margin: 10px; }
+    canvas#debug { position: absolute; top: 0; left: 0; display:none; }
+  </style>
 </head>
 <body>
-  <script>
-  // Знімаємо всі SW з домену + чистимо кеші (часто ламають github.io після PWA)
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
-  }
-  if (window.caches) {
-    caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
-  }
-</script>
-  <header class="topbar">
-    <div class="title">HairTry Live</div>
-    <div class="subtitle">Приміряй 3D-зачіску в реальному часі</div>
-  </header>
+  <h1>👩‍🦱 Hair Try-On</h1>
+  <div id="status"></div>
 
-  <main class="layout">
-    <section class="stage">
-      <!-- Відео -->
-<video id="video" autoplay playsinline muted></video>
+  <!-- Відео -->
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="debug"></canvas>
 
-<!-- Стікер-статус (показуємо, що відбувається) -->
-<div id="status"
-     style="margin-top:10px;color:#e11;font-weight:600;"></div>
-</div>
-      <!-- 3D-рендерер (прозорий) вставиться сюди скриптом -->
-      <div id="three-root"></div>
+  <!-- Three.js сцена -->
+  <div id="three-root"></div>
 
-      <!-- Опц. тонкий canvas для дебагу лендмарок -->
-      <canvas id="debug" class="debug"></canvas>
+  <!-- Кнопки -->
+  <div id="controls">
+    <button id="btnStart">Старт камери</button>
+    <button id="btnPhoto">Завантажити фото</button>
+    <input id="photoInput" type="file" accept="image/*" hidden />
+    <button id="btnFlip">Дзеркало</button>
+    <button id="btnDebug">Debug</button>
+  </div>
 
-      <!-- Фото-фолбек, якщо камери нема -->
-      <input type="file" id="photoInput" accept="image/*" class="hidden" />
-    </section>
+  <!-- Налаштування -->
+  <div>
+    <label>Колір: <input type="color" id="hairColor" value="#ffcc00"></label>
+    <label>Прозорість: <input type="range" id="hairOpacity" min="0" max="1" step="0.05" value="1"></label>
+    <label>Масштаб: <input type="range" id="hairScale" min="0.5" max="2" step="0.1" value="1"></label>
+    <label>Y Offset: <input type="range" id="hairYOffset" min="-1" max="1" step="0.05" value="0"></label>
+    <label>Z Offset: <input type="range" id="hairZOffset" min="-1" max="1" step="0.05" value="0"></label>
+    <select id="styleSelect">
+      <option value="builtin">Вбудована зачіска</option>
+    </select>
+  </div>
 
-    <aside class="panel">
-      <div class="group">
-        <button id="btnStart" class="btn">▶ Увімкнути камеру</button>
-        <button id="btnPhoto" class="btn ghost">Завантажити фото</button>
-      </div>
-
-      <div class="group">
-        <label class="row">
-          Колір волосся
-          <input type="color" id="hairColor" value="#2b1b12" />
-        </label>
-        <label class="row">
-          Прозорість
-          <input type="range" id="hairOpacity" min="0.2" max="1" step="0.01" value="0.95" />
-        </label>
-        <label class="row">
-          Масштаб
-          <input type="range" id="hairScale" min="0.7" max="1.6" step="0.01" value="1" />
-        </label>
-        <label class="row">
-          Зсув по висоті
-          <input type="range" id="hairYOffset" min="-0.15" max="0.25" step="0.005" value="0" />
-        </label>
-        <label class="row">
-          Зсув уперед/назад
-          <input type="range" id="hairZOffset" min="-0.2" max="0.2" step="0.005" value="0" />
-        </label>
-      </div>
-
-      <div class="group">
-        <button id="btnFlip" class="btn ghost">↔ Дзеркалити відео</button>
-        <button id="btnDebug" class="btn ghost">Показати точки</button>
-      </div>
-
-      <div class="group">
-        <label class="row">
-          Стиль (GLB)
-          <select id="styleSelect">
-            <option value="builtin">Вбудований (шапка)</option>
-            <!-- приклади під GLB (додаси свої файли в /models і вкажеш URL) -->
-            <option value="models/male_short.glb">Short (GLB)</option>
-            <option value="models/male_curly.glb">Curly (GLB)</option>
-          </select>
-        </label>
-      </div>
-
-      <p class="hint">Під GLB-модель поки стоїть заглушка. Додамо реальні моделі — і отримаєш рівень TikTok.</p>
-    </aside>
-  </main>
-
-  <footer class="foot">Порада: краще освітлення і камера прямо — трекінг стабільніший.</footer>
-<div id="status"
-     style="position:fixed;left:10px;bottom:10px;background:rgba(0,0,0,.7);
-            color:#fff;padding:8px 10px;border-radius:8px;font:12px/1.2 system-ui;
-            z-index:9999;display:none"></div>
+  <!-- Three.js + main -->
   <script type="module" src="main.js"></script>
-  <script src="sticker.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2"></script>
 </body>
 </html>
