@@ -1,7 +1,9 @@
 // ===== Imports (ESM) =====
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 import { GLTFLoader } from "https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
-
+const statusEl = document.getElementById("status");
+function info(msg){ statusEl.style.display='block'; statusEl.textContent = msg; }
+function ok(){ statusEl.style.display='none'; }
 // ===== DOM =====
 const video = document.getElementById("video");
 const debugCanvas = document.getElementById("debug");
