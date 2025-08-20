@@ -9,6 +9,15 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/vision_bundle.js"></script>
 </head>
 <body>
+  <script>
+  // Знімаємо всі SW з домену + чистимо кеші (часто ламають github.io після PWA)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+  }
+  if (window.caches) {
+    caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+  }
+</script>
   <header class="topbar">
     <div class="title">HairTry Live</div>
     <div class="subtitle">Приміряй 3D-зачіску в реальному часі</div>
