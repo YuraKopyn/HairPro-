@@ -150,37 +150,41 @@ initFace();
 // ===== Відео/фото =====
 btnStart.addEventListener("click", async () => {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+    info("Запит доступу до камери…");
+
+    // iOS обовʼязково:
+    video.setAttribute("playsinline", "");
+    video.setAttribute("autoplay", "");
+    video.muted = true;
+
+    const constraints = {
+      audio: false,
+      video: {
+        facingMode: "user",
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    };
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    info("Камеру дозволено. Запускаю відео…");
     video.srcObject = stream;
-    await video.play();
+
+    // Дочекатися, поки відео реально готове
+    await video.play().catch(()=>{});
+    if (video.readyState < 2) {
+      await new Promise(res => {
+        const onCanPlay = () => { video.removeEventListener("canplay", onCanPlay); res(); };
+        video.addEventListener("canplay", onCanPlay, { once:true });
+      });
+    }
+
+    ok();
     resizeAll();
     startLoop();
   } catch (e) {
-    alert("Камеру не вдалося увімкнути. Спробуй дозволити доступ або використовуй фото.");
+    info("Камера не запустилась: " + (e && e.message ? e.message : e));
   }
-});
-
-btnPhoto.addEventListener("click", ()=> photoInput.click());
-photoInput.addEventListener("change", e => {
-  const f = e.target.files?.[0]; if (!f) return;
-  const url = URL.createObjectURL(f);
-  // Малюємо фото у <video> через <img> -> <canvas> бекенд
-  const img = new Image();
-  img.onload = () => {
-    // Підміняємо відео кадром із фото
-    const off = document.createElement("canvas");
-    off.width = img.width; off.height = img.height;
-    off.getContext("2d").drawImage(img,0,0);
-    // Используємо HTMLVideoElement з MediaStreamTrackGenerator? — складно.
-    // Простий шлях: показати фото як фон у video і гнати трекер по <canvas>.
-    // Для простоти тут просто вставимо фото на місце відео:
-    video.srcObject = null;
-    video.src = off.toDataURL();
-    video.loop = true; // щоб не зупинявся
-    video.play();
-    resizeAll();
-  };
-  img.src = url;
 });
 
 // ===== Розміри =====
